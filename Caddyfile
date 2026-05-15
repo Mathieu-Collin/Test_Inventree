@@ -1,0 +1,18 @@
+{$INVENTREE_SITE_URL:http://localhost} {
+	# Servir les fichiers statiques (interface web, CSS, JS)
+	handle_path /static/* {
+		root * /var/www/static
+		file_server
+	}
+
+	# Servir les médias (images des pièces téléchargées)
+	handle_path /media/* {
+		root * /var/www/media
+		file_server
+	}
+
+	# Rediriger le reste du trafic vers le serveur InvenTree
+	handle {
+		reverse_proxy inventree-server:8000
+	}
+}
