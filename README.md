@@ -145,7 +145,7 @@ nano .env
    - `INVENTREE_ADMIN_PASSWORD` : Mot de passe administrateur
    - `INVENTREE_ADMIN_EMAIL` : Email du compte administrateur
    - `INVENTREE_SITE_URL` : URL d'accès (pour la production : `https://votre-domaine.com`)
-   - `INVENTREE_WEB_PORT` : Port d'écoute (80 pour HTTP, configurable)
+  - `INVENTREE_WEB_PORT` : Port d'écoute (8080 pour HTTP par défaut, configurable)
 
 ### Étape 3 : Démarrer les conteneurs
 
@@ -162,7 +162,7 @@ docker-compose logs -f inventree-server
 
 ### Étape 4 : Accéder à l'application
 
-- **Interface web** : `http://localhost` (ou `http://<votre-ip>`)
+- **Interface web** : `http://localhost:8080` (ou `http://<votre-ip>:8080`)
 - **Identifiant administrateur** : Défini dans `.env` (`INVENTREE_ADMIN_USER`)
 - **Mot de passe** : Défini dans `.env` (`INVENTREE_ADMIN_PASSWORD`)
 
@@ -179,7 +179,7 @@ Suivre les prompts pour entrer le nouvel identifiant et mot de passe.
 ### Accès à la plateforme
 
 1. Ouvrir un navigateur web
-2. Accéder à `http://localhost` (ou l'IP du serveur)
+2. Accéder à `http://localhost:8080` (ou l'IP du serveur sur le port 8080)
 3. Se connecter avec les identifiants définis
 4. Commencer à gérer l'inventaire !
 

@@ -11,14 +11,43 @@ services:
       - POSTGRES_DB=${INVENTREE_DB_NAME}
     volumes:
       - ${INVENTREE_EXT_VOLUME}/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${INVENTREE_DB_USER} -d ${INVENTREE_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # 2.5. Migration one-shot job
+  inventree-migrate:
+    image: inventree/inventree:${INVENTREE_TAG:-stable}
+    container_name: inventree-migrate
+    restart: "no"
+    depends_on:
+      inventree-db:
+        condition: service_healthy
+    command: ["sh", "-lc", "invoke migrate"]
+    environment:
+      - INVENTREE_DB_ENGINE=postgresql
+      - INVENTREE_DB_HOST=inventree-db
+      - INVENTREE_DB_PORT=5432
+      - INVENTREE_DB_NAME=${INVENTREE_DB_NAME}
+      - INVENTREE_DB_USER=${INVENTREE_DB_USER}
+      - INVENTREE_DB_PASSWORD=${INVENTREE_DB_PASSWORD}
+      - INVENTREE_SITE_URL=${INVENTREE_SITE_URL}
+    volumes:
+      - ${INVENTREE_EXT_VOLUME}/data:/home/inventree/data
 
   # 2. Serveur principal InvenTree
   inventree-server:
     image: inventree/inventree:${INVENTREE_TAG:-stable}
     container_name: inventree-server
-    restart: no
+    restart: unless-stopped
     depends_on:
-      - inventree-db
+      inventree-db:
+        condition: service_healthy
+      inventree-migrate:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
     environment:
@@ -45,7 +74,8 @@ services:
     restart: unless-stopped
     command: invoke worker
     depends_on:
-      - inventree-server
+      inventree-server:
+        condition: service_started
     environment:
       - INVENTREE_DB_ENGINE=postgresql
       - INVENTREE_DB_HOST=inventree-db
@@ -63,9 +93,10 @@ services:
     container_name: inventree-proxy
     restart: unless-stopped
     depends_on:
-      - inventree-server
+      inventree-server:
+        condition: service_started
     ports:
-      - "${INVENTREE_WEB_PORT:-80}:80"
+      - "${INVENTREE_WEB_PORT:-8080}:80"
     environment:
       - INVENTREE_SITE_URL=${INVENTREE_SITE_URL}
     volumes:
